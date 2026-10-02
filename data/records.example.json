@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1001",
+    "email": "customer.one@example.com",
+    "status": "ACTIVE",
+    "fullName": "Customer One"
+  },
+  {
+    "id": "1002",
+    "email": "customer.two@example.com",
+    "status": "PENDING",
+    "fullName": "Customer Two"
+  }
+]

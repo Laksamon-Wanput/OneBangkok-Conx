@@ -1,0 +1,37 @@
+{
+  "name": "conx-db-validation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright tests for validating database records against Conx.",
+  "scripts": {
+    "test": "playwright test",
+    "test:validation": "playwright test tests/conx-db-validation.spec.ts",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "parking:fetch": "tsx scripts/parking-transaction/get-parking-transactions.ts",
+    "parking:fetch:headed": "tsx scripts/parking-transaction/get-parking-transactions.ts --headed",
+    "run-parking-transaction-comparison": "tsx scripts/parking-transaction/run-parking-transaction-comparison.ts",
+    "parking:compare:report": "tsx scripts/parking-transaction/compare-parking-transactions.ts",
+    "parking-receipt:fetch": "tsx scripts/parking-reciept/get-parking-receipt-items.ts",
+    "parking-receipt:fetch:headed": "tsx scripts/parking-reciept/get-parking-receipt-items.ts --headed",
+    "run-parking-receipt-item-comparison": "tsx scripts/parking-reciept/run-parking-receipt-item-comparison.ts",
+    "parking-receipt:compare:report": "tsx scripts/parking-reciept/compare-parking-receipt-items.ts",
+    "bus-ride:fetch": "tsx scripts/bus-ride/get-bus-rides.ts",
+    "bus-ride:database": "tsx scripts/bus-ride/get-bus-rides-from-database.ts",
+    "bus-ride:compare:report": "tsx scripts/bus-ride/compare-bus-rides.ts",
+    "run-bus-ride-comparison": "tsx scripts/bus-ride/run-bus-ride-comparison.ts",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^17.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}
