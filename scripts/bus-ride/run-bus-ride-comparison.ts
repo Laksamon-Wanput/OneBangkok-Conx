@@ -9,6 +9,9 @@ import {
 async function main(): Promise<void> {
   const selection = await loadBusRideSelection();
   console.log(`${busRideSelectionLabel(selection)} used for every Bus Ride step: ${selection.value}`);
+  if (selection.busShift) {
+    console.log(`Bus shift used for every Bus Ride step: ${selection.busShift}`);
+  }
 
   const steps = [
     ['Step 1: Bus Ride Website fetch', 'get-bus-rides.ts'],

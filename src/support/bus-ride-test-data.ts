@@ -27,20 +27,31 @@ export async function loadBusRideSelection(
 ): Promise<BusRideSelection> {
   const email = parkingEmailFromArgs(args);
   const routeName = argumentValue(args, '--route-name');
+  const busShift = argumentValue(args, '--bus-shift');
   if (email && routeName) {
     throw new Error('Use either --email or --route-name, not both');
   }
-  if (routeName) return { mode: 'route', value: routeName };
-  return { mode: 'email', value: email ?? await loadBusRideTestEmail(args) };
+  if (routeName) return { mode: 'route', value: routeName, busShift };
+  return {
+    mode: 'email',
+    value: email ?? await loadBusRideTestEmail(args),
+    busShift,
+  };
 }
 
 export function busRideSelectionArgs(selection: BusRideSelection): string[] {
-  return [selection.mode === 'email' ? '--email' : '--route-name', selection.value];
+  const args = [selection.mode === 'email' ? '--email' : '--route-name', selection.value];
+  if (selection.busShift) args.push('--bus-shift', selection.busShift);
+  return args;
 }
 
 export function busRideSelectionOutputKey(selection: BusRideSelection): string {
   const prefix = selection.mode === 'email' ? '' : 'route-';
-  return `${prefix}${selection.value.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const value = selection.value.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const shift = selection.busShift
+    ? `-shift-${selection.busShift.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+    : '';
+  return `${prefix}${value}${shift}`;
 }
 
 export function busRideSelectionLabel(selection: BusRideSelection): string {

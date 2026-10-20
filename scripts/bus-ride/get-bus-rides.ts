@@ -87,6 +87,21 @@ async function main(): Promise<void> {
         .filter((customer) => customerDocumentIds.has(customer._docId));
     }
 
+    if (selection.busShift) {
+      const normalizedBusShift = selection.busShift.toLowerCase();
+      matchedRides = matchedRides.filter(
+        (ride) => ride.busShift?.trim().toLowerCase() === normalizedBusShift,
+      );
+      customerDocumentIds = new Set(
+        matchedRides
+          .map((ride) => reference(ride.customers)?.value)
+          .filter((value): value is string => typeof value === 'string'),
+      );
+      matchingCustomers = matchingCustomers.filter(
+        (customer) => customerDocumentIds.has(customer._docId),
+      );
+    }
+
     const customerAccountsByDocumentId = Object.fromEntries(
       matchingCustomers.map((customer) => [customer._docId, customer.accountId ?? null]),
     );

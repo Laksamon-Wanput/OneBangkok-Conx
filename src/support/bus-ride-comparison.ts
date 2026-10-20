@@ -185,7 +185,7 @@ export function websiteRow(
     'Bus Reference': text(ride.busReference),
     'Bus shift': text(ride.busShift),
     'Created User': text(customerAccountByRideDocumentId[ride._docId]),
-    'Created Date': dateTimeValue(ride.createdDate),
+    'Created Date': dateTimeHourValue(ride.createdDate),
     Customer: text(customerAccountByRideDocumentId[ride._docId]),
     'Event Id': text(ride.cx_Name),
     'Route Name': text(ride.routeName),
@@ -198,11 +198,11 @@ export function websiteRow(
 function sourceRow(row: BusRideSourceRow): ComparableRow {
   return {
     'Boarding Location': text(row['Boarding Location']),
-    'Boarding Time': sourceWallClockDateTimeValue(row['Boarding Time']),
+    'Boarding Time': sourceBangkokDateTimeValue(row['Boarding Time']),
     'Bus Reference': text(row['Bus Reference']),
     'Bus shift': text(row['Bus shift']),
     'Created User': text(row['Created User']),
-    'Created Date': dateTimeValue(row['Created Date']),
+    'Created Date': dateTimeHourValue(row['Created Date']),
     Customer: text(row.Customer),
     'Event Id': text(row['Event Id']),
     'Route Name': text(row['Route Name']),
@@ -223,23 +223,30 @@ function statusValue(value: unknown): string {
   return text(normalized).toLowerCase();
 }
 
-function dateTimeValue(value: unknown): string {
+function dateTimeHourValue(value: unknown): string {
   const seconds = firestoreSeconds(value);
-  if (seconds !== undefined) return isoSeconds(new Date(seconds * 1_000));
+  if (seconds !== undefined) return isoHour(new Date(seconds * 1_000));
   const normalized = text(value);
   if (!normalized) return '';
   const date = new Date(normalized);
-  return Number.isNaN(date.getTime()) ? normalized : isoSeconds(date);
+  return Number.isNaN(date.getTime()) ? normalized : isoHour(date);
 }
 
-function sourceWallClockDateTimeValue(value: unknown): string {
+function sourceBangkokDateTimeValue(value: unknown): string {
   const normalized = text(value);
   const match = normalized.match(
     /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/,
   );
-  return match
-    ? `${match[1]}-${match[2]}-${match[3]} ${match[4]}:${match[5]}:${match[6]}`
-    : normalized;
+  if (!match) return normalized;
+  const bangkokTime = new Date(Date.UTC(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    Number(match[4]) + 7,
+    Number(match[5]),
+    Number(match[6]),
+  ));
+  return utcWallClockDateTime(bangkokTime);
 }
 
 function bangkokDateTimeValue(value: unknown): string {
@@ -270,8 +277,12 @@ function firestoreSeconds(value: unknown): number | undefined {
   return typeof seconds === 'number' ? seconds : undefined;
 }
 
-function isoSeconds(value: Date): string {
-  return value.toISOString().replace(/\.\d{3}Z$/, 'Z');
+function isoHour(value: Date): string {
+  return value.toISOString().slice(0, 13);
+}
+
+function utcWallClockDateTime(value: Date): string {
+  return value.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
 }
 
 function text(value: unknown): string {

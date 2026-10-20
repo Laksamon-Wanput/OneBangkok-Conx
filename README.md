@@ -170,13 +170,27 @@ Scripts อยู่ใน `scripts/bus-ride/` และทำงานตาม
 1. ดึง Bus Ride จาก Conx โดยค้นหา Customer ด้วย Email
 2. หา `account_id` จาก IAM Database ด้วย Email เดียวกัน
 3. ใช้ `account_id` ดึง `passenger_boardings` จาก PocketBase ด้วย `find_passenger_boardings.py`
-4. เปรียบเทียบข้อมูล Bus Ride โดย resolve `Boarding Location` เป็นชื่อ, เทียบเวลา Boarding ตามเวลา Bangkok, เทียบ `Created Date` ถึงระดับวินาทีโดยไม่สนใจ milliseconds และไม่เทียบ `Last Modified`/`Modified User`
+4. เปรียบเทียบข้อมูล Bus Ride โดย resolve `Boarding Location` เป็นชื่อ, บวกเวลา `Boarding Time` ฝั่ง Database 7 ชั่วโมงก่อนเทียบกับเวลา Bangkok, เทียบ `Created Date` เฉพาะ `YYYY-MM-DDTHH` และไม่เทียบ `Last Modified`/`Modified User`
 
 รัน Flow ทั้งหมด:
 
 ```bash
 npm run run-bus-ride-comparison -- --email "chutikarn.jon+5@mtel.co.th"
 ```
+
+ระบุ `Bus shift` เป็นเงื่อนไขค้นหาเพิ่มเติมได้ทั้งโหมด Email และ Route Name:
+
+```bash
+npm run run-bus-ride-comparison -- --email "chutikarn.jon+5@mtel.co.th" --bus-shift "08:00 - 09:00"
+```
+
+ตัวอย่างค้นหาด้วย Route Name และ Bus shift:
+
+```bash
+npm run run-bus-ride-comparison -- --route-name "Mtel (Office) - Lunch Canteen" --bus-shift "08:00 - 09:00"
+```
+
+เมื่อระบุ `--bus-shift` ระบบจะใช้ค่านี้กรองข้อมูลทั้ง Website และ Database และเติม shift ต่อท้ายชื่อไฟล์ output เพื่อไม่ให้เขียนทับผลการค้นหาที่ไม่ได้ระบุ shift
 
 หรือค้นหาและเปรียบเทียบทุก Bus Ride ด้วย Route Name โดยไม่ต้องระบุ Email:
 

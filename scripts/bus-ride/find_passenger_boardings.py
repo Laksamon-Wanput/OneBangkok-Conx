@@ -166,18 +166,27 @@ class PocketBaseClient:
         log("login PocketBase สำเร็จ")
 
     def find_boardings(
-        self, account_id: str | None = None, per_page: int = 200
+        self,
+        account_id: str | None = None,
+        bus_shift: str | None = None,
+        per_page: int = 200,
     ) -> list[dict[str, Any]]:
         records: list[dict[str, Any]] = []
         page = 1
         # json.dumps produces the quoted and escaped string PocketBase filters expect.
-        record_filter = (
-            f"user_id = {json.dumps(account_id, ensure_ascii=False)}"
-            if account_id
-            else ""
-        )
+        filters = []
+        if account_id:
+            filters.append(f"user_id = {json.dumps(account_id, ensure_ascii=False)}")
+        if bus_shift:
+            filters.append(f"bus_shift = {json.dumps(bus_shift, ensure_ascii=False)}")
+        record_filter = " && ".join(filters)
         while True:
-            search_label = f"account_id={account_id}" if account_id else "ทุก account"
+            search_parts = []
+            if account_id:
+                search_parts.append(f"account_id={account_id}")
+            if bus_shift:
+                search_parts.append(f"bus_shift={bus_shift}")
+            search_label = ", ".join(search_parts) or "ทุก account"
             log(f"กำลังค้นหา {search_label} (หน้า {page})...")
             query: dict[str, Any] = {
                 "page": page,
@@ -289,6 +298,7 @@ def build_parser() -> argparse.ArgumentParser:
     search = parser.add_mutually_exclusive_group(required=True)
     search.add_argument("--account-id", help="IAM account_id ที่ต้องการค้นหา")
     search.add_argument("--route-name", help="Route Name ที่ต้องการค้นหาทุก account")
+    parser.add_argument("--bus-shift", help="กรอง Bus shift เพิ่มเติม")
     parser.add_argument(
         "--modified-user",
         help=(
@@ -313,10 +323,13 @@ def main() -> int:
     args = build_parser().parse_args()
     account_id = args.account_id.strip() if args.account_id else None
     route_name = args.route_name.strip() if args.route_name else None
+    bus_shift = args.bus_shift.strip() if args.bus_shift else None
     if args.account_id is not None and not account_id:
         fail("--account-id ห้ามเป็นค่าว่าง", 2)
     if args.route_name is not None and not route_name:
         fail("--route-name ห้ามเป็นค่าว่าง", 2)
+    if args.bus_shift is not None and not bus_shift:
+        fail("--bus-shift ห้ามเป็นค่าว่าง", 2)
     if args.timeout <= 0:
         fail("--timeout ต้องมากกว่า 0", 2)
 
@@ -340,7 +353,7 @@ def main() -> int:
         log("ใช้โหมดข้ามการตรวจ TLS certificate (UAT)")
     client = PocketBaseClient(pb_url, insecure_tls=insecure_tls, timeout=args.timeout)
     client.authenticate(email, password)
-    source_records = client.find_boardings(account_id)
+    source_records = client.find_boardings(account_id, bus_shift)
     modified_user = (
         args.modified_user
         or env_value(dotenv, "CONX_MODIFIED_USER")

@@ -15,7 +15,7 @@ const sourceExport: BusRideSourceExport = {
   count: 1,
   rides: [{
     'Boarding Location': 'location-1',
-    'Boarding Time': '2026-09-30 08:02:03.000Z',
+    'Boarding Time': '2026-09-30 01:02:03.000Z',
     'Bus Reference': 'Bus 1',
     'Bus shift': '08:00',
     'Created User': 'account-1',
@@ -107,11 +107,11 @@ test('groups every field mismatch for the same Event Id into one CSV row', () =>
   const csv = busRideComparisonReportCsv(sourceExport.selection, result);
   expect(csv.trim().split('\r\n')).toHaveLength(4);
   expect(csv).toContain('"Boarding Location | Created Date | Route Name"');
-  expect(csv).toContain('Boarding Location: Database Location | Created Date: 2026-09-30T02:03:04Z | Route Name: Database Route');
-  expect(csv).toContain('Boarding Location: location-1 | Created Date: 2026-09-30T01:02:04Z | Route Name: Route 1');
+  expect(csv).toContain('Boarding Location: Database Location | Created Date: 2026-09-30T02 | Route Name: Database Route');
+  expect(csv).toContain('Boarding Location: location-1 | Created Date: 2026-09-30T01 | Route Name: Route 1');
 });
 
-test('ignores Last Modified, Modified User, and Created Date milliseconds', () => {
+test('ignores Last Modified, Modified User, and Created Date values below the hour', () => {
   const changedSource: BusRideSourceExport = {
     ...sourceExport,
     rides: [{
@@ -123,6 +123,28 @@ test('ignores Last Modified, Modified User, and Created Date milliseconds', () =
   };
 
   const result = compareBusRides('customer@example.com', changedSource, websiteExport);
+  expect(result.issues).toEqual([]);
+});
+
+test('adds seven hours to Database Boarding Time and compares Created Date by hour', () => {
+  const actualSource: BusRideSourceExport = {
+    ...sourceExport,
+    rides: [{
+      ...sourceExport.rides[0],
+      'Boarding Time': '2026-10-12 07:48:43',
+      'Created Date': '2026-10-12T07:48:45Z',
+    }],
+  };
+  const actualWebsite: BusRideWebsiteExport = {
+    ...websiteExport,
+    rides: [{
+      ...websiteExport.rides[0],
+      boardingTime: '2026-10-12T07:48:43Z',
+      createdDate: '2026-10-12T07:49:00Z',
+    }],
+  };
+
+  const result = compareBusRides('customer@example.com', actualSource, actualWebsite);
   expect(result.issues).toEqual([]);
 });
 

@@ -1,8 +1,9 @@
 import type { ConxReference } from './parking-transaction';
 
-export type BusRideSelection =
+export type BusRideSelection = (
   | { mode: 'email'; value: string }
-  | { mode: 'route'; value: string };
+  | { mode: 'route'; value: string }
+) & { busShift?: string };
 
 export type BusRide = {
   _docId: string;

@@ -32,3 +32,27 @@ test('rejects using Email and Route Name together', async () => {
     'Route A',
   ])).rejects.toThrow('Use either --email or --route-name, not both');
 });
+
+test('adds Bus shift to the selection, child arguments, and output key', async () => {
+  const selection = await loadBusRideSelection([
+    '--email',
+    'customer@example.com',
+    '--bus-shift',
+    '08:00 - 09:00',
+  ]);
+
+  expect(selection).toEqual({
+    mode: 'email',
+    value: 'customer@example.com',
+    busShift: '08:00 - 09:00',
+  });
+  expect(busRideSelectionArgs(selection)).toEqual([
+    '--email',
+    'customer@example.com',
+    '--bus-shift',
+    '08:00 - 09:00',
+  ]);
+  expect(busRideSelectionOutputKey(selection)).toBe(
+    'customer_example.com-shift-08_00_-_09_00',
+  );
+});

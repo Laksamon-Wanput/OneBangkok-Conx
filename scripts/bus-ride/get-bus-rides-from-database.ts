@@ -26,7 +26,11 @@ async function main(): Promise<void> {
   const rows: BusRideSourceRow[] = [];
   try {
     const searches: BusRideSelection[] = selection.mode === 'email'
-      ? accountIds.map((accountId) => ({ mode: 'email', value: accountId }))
+      ? accountIds.map((accountId) => ({
+          mode: 'email',
+          value: accountId,
+          busShift: selection.busShift,
+        }))
       : [selection];
     for (const [index, search] of searches.entries()) {
       const outputPath = path.join(tempDirectory, `search-${index + 1}.json`);
@@ -81,6 +85,9 @@ async function runPassengerBoardingScript(
     '--output',
     outputPath,
   ];
+  if (selection.busShift) {
+    args.push('--bus-shift', selection.busShift);
+  }
   if (process.env.CONX_USERNAME) {
     args.push('--modified-user', process.env.CONX_USERNAME);
   }

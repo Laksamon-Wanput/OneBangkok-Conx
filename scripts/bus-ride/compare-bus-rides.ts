@@ -57,7 +57,11 @@ async function readJson<T extends { selection?: BusRideSelection }>(
     throw new Error(`Required input not found: ${filePath}. Run the full Bus Ride flow first.`);
   }
   const data = JSON.parse(content) as T;
-  if (data.selection?.mode !== selection.mode || data.selection.value !== selection.value) {
+  if (
+    data.selection?.mode !== selection.mode
+    || data.selection.value !== selection.value
+    || data.selection.busShift !== selection.busShift
+  ) {
     throw new Error(`Input selection does not match requested ${selection.mode} in ${filePath}`);
   }
   return data;
